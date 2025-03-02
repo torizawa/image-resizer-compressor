@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 from PIL import Image
 import glob
 
@@ -25,6 +26,7 @@ def resize_images(input_folder, output_folder, max_width=1300, max_size_kb=300):
     max_size_bytes = max_size_kb * 1024
     
     print(f"処理対象の画像ファイル数: {len(all_files)}")
+    print(f"最大幅: {max_width}px, 最大サイズ: {max_size_kb}KB")
     
     for file_path in all_files:
         try:
@@ -79,17 +81,31 @@ def resize_images(input_folder, output_folder, max_width=1300, max_size_kb=300):
         except Exception as e:
             print(f"エラー: {filename} の処理中にエラーが発生しました: {e}")
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("使用方法: python resize_images.py 入力フォルダ 出力フォルダ")
+def main():
+    # コマンドライン引数のパーサーを作成
+    parser = argparse.ArgumentParser(description='画像のリサイズと最適化を行います。')
+    
+    # 必須引数
+    parser.add_argument('input_folder', help='処理する画像が含まれる入力フォルダのパス')
+    parser.add_argument('output_folder', help='処理後の画像を保存する出力フォルダのパス')
+    
+    # オプション引数
+    parser.add_argument('--width', type=int, default=1300, 
+                        help='画像の最大幅（ピクセル単位）、デフォルト: 1300')
+    parser.add_argument('--size', type=int, default=300, 
+                        help='画像の最大ファイルサイズ（KB単位）、デフォルト: 300')
+    
+    # 引数をパース
+    args = parser.parse_args()
+    
+    # 入力フォルダの存在確認
+    if not os.path.exists(args.input_folder):
+        print(f"エラー: 入力フォルダ {args.input_folder} が存在しません。")
         sys.exit(1)
     
-    input_folder = sys.argv[1]
-    output_folder = sys.argv[2]
-    
-    if not os.path.exists(input_folder):
-        print(f"エラー: 入力フォルダ {input_folder} が存在しません。")
-        sys.exit(1)
-    
-    resize_images(input_folder, output_folder)
+    # 画像処理実行
+    resize_images(args.input_folder, args.output_folder, args.width, args.size)
     print("処理が完了しました。")
+
+if __name__ == "__main__":
+    main()
